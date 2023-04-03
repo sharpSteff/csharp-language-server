@@ -10,6 +10,10 @@ open State
 [<EntryPoint>]
 let entry args =
     try
+        Log.Logger <- LoggerConfiguration()
+            .WriteTo.File("csharp-ls.log")
+            .CreateLogger()
+        
         let culture = CultureInfo("en-US")
         Thread.CurrentThread.CurrentCulture <- culture
         Thread.CurrentThread.CurrentUICulture <- culture
