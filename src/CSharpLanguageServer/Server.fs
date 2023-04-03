@@ -1505,5 +1505,5 @@ let start options =
         int result
     with
     | _ex ->
-        // logger.error (Log.setMessage "Start - LSP mode crashed" >> Log.addExn ex)
+        Serilog.Log.Error(_ex, "Start - LSP mode crashed")
         3

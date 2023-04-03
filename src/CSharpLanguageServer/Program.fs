@@ -2,11 +2,16 @@ module CSharpLanguageServer.Program
 
 open Argu
 open System.Reflection
+open Serilog
 open State
 
 [<EntryPoint>]
 let entry args =
     try
+        Log.Logger <- LoggerConfiguration()
+            .WriteTo.File("csharp-ls.log")
+            .CreateLogger()
+        
         let argParser = ArgumentParser.Create<Options.CLIArguments>(programName = "csharp-ls")
         let serverArgs = argParser.Parse args
 
@@ -30,7 +35,8 @@ let entry args =
                        |> Option.defaultValue "log"
                        |> parseLogLevel
         }
-
+        
+        Log.Information($"csharp-ls settings solution: {settings.SolutionPath} log level {settings.LogLevel}")
         Server.start settings
     with
     | :? ArguParseException as ex ->
