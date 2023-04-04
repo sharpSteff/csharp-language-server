@@ -40,12 +40,16 @@ let entry args =
         Server.start settings
     with
     | :? ArguParseException as ex ->
+        Log.Error(ex, "csharp-ls error during parsing")
         printfn "%s" ex.Message
 
         match ex.ErrorCode with
         | ErrorCode.HelpText -> 0
-        | _ -> 1  // Unrecognised arguments
+        | _ ->
+            Log.Error(ex, "csharp-ls Unrecognised arguments")
+            1  // Unrecognised arguments
 
     | e ->
+        Log.Error(e, "csharp-ls crashed")
         printfn "Server crashing error - %s \n %s" e.Message e.StackTrace
         3

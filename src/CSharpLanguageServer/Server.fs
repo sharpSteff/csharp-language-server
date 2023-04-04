@@ -16,7 +16,7 @@ open Microsoft.CodeAnalysis.CSharp.Syntax
 open Microsoft.CodeAnalysis.CodeFixes
 open Microsoft.CodeAnalysis.Classification
 open Microsoft.Build.Locator
-open Newtonsoft.Json
+open StreamJsonRpc
 open Newtonsoft.Json.Linq
 open Ionide.LanguageServerProtocol
 open Ionide.LanguageServerProtocol.Server
@@ -1488,6 +1488,23 @@ let setupServerHandlers settings (lspClient: LspClient) =
     ]
     |> Map.ofList
 
+let logRpc (handler: IJsonRpcMessageHandler) =
+    { new JsonRpc(handler) with
+        member this.IsFatalException(ex: Exception) =
+            match ex with
+            | :? LocalRpcException ->
+                Serilog.Log.Error(ex, "Error during JsonRpc")
+                false
+            | _ -> true
+
+        override this.OnResponseReceived(message: Protocol.JsonRpcMessage) =
+            base.OnResponseReceived(message)
+            Serilog.Log.Debug("Response received: {Message}", message)
+
+        override this.OnResponseSent(message: Protocol.JsonRpcMessage) =
+            base.OnResponseSent(message)
+            Serilog.Log.Debug("Response sent: {Message}", message) }
+        
 let startCore options =
     use input = Console.OpenStandardInput()
     use output = Console.OpenStandardOutput()
@@ -1497,8 +1514,8 @@ let startCore options =
         input
         output
         CSharpLspClient
-        defaultRpc
-
+        logRpc
+  
 let start options =
     try
         let result = startCore options
