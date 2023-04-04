@@ -1,5 +1,7 @@
 module CSharpLanguageServer.Program
 
+open System.Globalization
+open System.Threading
 open Argu
 open System.Reflection
 open Serilog
@@ -8,6 +10,10 @@ open State
 [<EntryPoint>]
 let entry args =
     try
+        let culture = CultureInfo("en-US")
+        Thread.CurrentThread.CurrentCulture <- culture
+        Thread.CurrentThread.CurrentUICulture <- culture
+
         Log.Logger <- LoggerConfiguration()
             .WriteTo.File("csharp-ls.log")
             .CreateLogger()
